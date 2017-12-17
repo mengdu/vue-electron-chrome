@@ -1,16 +1,29 @@
 <template>
-<div id="app">
+<div id="app"
+  :style="{
+    border: theme.windowBorder,
+    'border-color': theme.windowBorderColor
+  }"
+  >
 <el-container class="browser">
-  <el-header class="browser-header" :height="headerHeight">
-    <div class="header-left">
+  <el-header class="browser-header" :height="theme.titleBarHeight"
+    :style="{
+      'line-height': theme.titleBarHeight,
+      'background-color': theme.titleBarBgColor,
+      'color': theme.titleBarTextColor,
+      'margin-top': hideTitleBar ? ('-' + theme.titleBarHeight) : ''
+    }"
+    >
+    <div class="browser-title">
       <img src="./assets/logo.png" alt="" class="app-icon" @click="handleShowMenu">
-      <span>{{name}}</span>
-      <span v-if="title">&nbsp;-&nbsp;{{title}}</span>
+      <span class="app-name">{{name}}</span>
+      <span class="app-title"v-if="title">&nbsp;-&nbsp;{{title}}</span>
     </div>
     <div class="header-right">
-      <button class="ctrl-icon minimize" @click="handleMinimize"></button>
-      <button class="ctrl-icon maximize" @click="handleMaximize"></button>
-      <button class="ctrl-icon close" @click="handleClose"></button>
+      <button class="ctrl-icon fullscreen" title="全屏切换" @click="handleFullScreen"></button>
+      <button class="ctrl-icon minimize" title="最小化窗口" @click="handleMinimize"></button>
+      <button class="ctrl-icon maximize" title="最大化窗口" @click="handleMaximize"></button>
+      <button class="ctrl-icon close" title="关闭窗口" @click="handleClose"></button>
     </div>
   </el-header>
   <el-container>
@@ -24,21 +37,35 @@
 </template>
 
 <script>
-
 export default {
   name: 'vue-electron-chrome',
   data () {
     return {
+      theme: {
+        titleBarHeight: (process.env.APP_TITLE_BAR_HEIGHT || 30) + 'px',
+        titleBarBgColor: process.env.APP_TITLE_BAR_BGCOLOR,
+        titleBarTextColor: process.env.APP_TITLE_BAR_TEXTCOLOR,
+        windowBorderColor: process.env.APP_WINDOWN_BORDER_COLOR,
+        windowBorder: process.env.APP_WINDOWN_BORDER
+      },
+      hideTitleBar: process.env.APP_TITLE_BAR_HIDE === 'true',
       sideWidth: '150px',
-      headerHeight: '30px',
-      name: 'Electron Browser 1.0',
-      title: '全屏模式APP专用浏览器',
+      name: process.env.APP_NAME,
+      title: process.env.APP_TITLE,
       menu: null
     }
   },
   methods: {
     currentWindow () {
-      return this.$remote.getCurrentWindow()
+      return this.$electron.remote.getCurrentWindow()
+    },
+    handleFullScreen () {
+      var win = this.currentWindow()
+      if (win.isFullScreen()) {
+        win.setFullScreen(false)
+      } else {
+        win.setFullScreen(true)
+      }
     },
     handleMinimize () {
       var win = this.currentWindow()
@@ -53,37 +80,114 @@ export default {
       }
     },
     handleClose () {
-      // this.$ipc.send('close')
       var win = this.currentWindow()
-      win.close()
+      this.$confirm('你确定要关闭应用吗？', '提示', {
+        confirmButtonText: '确定关闭',
+        cancelButtonText: '再看看',
+        type: 'warning'
+      }).then(() => {
+        win.close()
+      }).catch(() => {})
     },
     handleShowMenu () {
-      // console.log(this.menu)
-      // if (this.showMenu) {
-      //   this.menu.closePopup()
-      //   this.showMenu = false
-      // } else {
-      //   this.showMenu = true
-      // }
-      this.menu.popup(this.currentWindow(), 5, 30)
+      this.menu.popup(this.currentWindow(), 0, 31)
     },
     initMenu () {
-      var Menu = this.$remote.Menu
-      var MenuItem = this.$remote.MenuItem
+      var that = this
+      var Menu = this.$electron.remote.Menu
+      var MenuItem = this.$electron.remote.MenuItem
       // this.menu = Menu.setApplicationMenu(Menu.buildFromTemplate(MenuTemplate))
-      this.menu = new Menu()
-      // this.menu.append(new MenuItem({label: '关于', role: 'help'}))
-      // this.menu.append(new MenuItem({label: '控制面板'}))
-      this.menu.append(new MenuItem({label: '调试', submenu: [{label: 'Devtool', role: 'toggledevtools'}]}))
-      this.menu.append(new MenuItem({label: '全屏', role: 'togglefullscreen'}))
-      this.menu.append(new MenuItem({label: '关闭', role: 'quit'}))
+
+      var contextMenuItem = [
+        {
+          label: '返回',
+          click: () => {
+            // console.log(this)
+            that.$root.webview && that.$root.webview.goBack()
+          }
+        },
+        {
+          label: '前进',
+          click: () => {
+            // console.log(contextMenuItem[0].enabled = false)
+            that.$root.webview && that.$root.webview.goForward()
+          }
+        },
+        {
+          label: '重新加载页面',
+          click () {
+            that.$root.webview && that.$root.webview.reload()
+          }
+        },
+        {type: 'separator'},
+        {label: '切换全屏', role: 'togglefullscreen'},
+        {
+          label: '显示/隐藏标题栏',
+          click () {
+            that.hideTitleBar = !that.hideTitleBar
+          }
+        },
+        {type: 'separator'},
+        {label: '重新加载应用', role: 'reload'},
+        {label: '强制加载应用', role: 'forcereload'},
+        {label: '应用控制台', role: 'toggledevtools'},
+        {type: 'separator'},
+        {
+          label: '审查元素',
+          click () {
+            if (that.$root.webview) {
+              if (that.$root.webview.isDevToolsOpened()) {
+                that.$root.webview.closeDevTools()
+              } else {
+                that.$root.webview.openDevTools()
+              }
+            }
+          }
+        }
+      ]
+      var contextMenu = new Menu()
+      for (let i in contextMenuItem) {
+        contextMenu.append(new MenuItem(contextMenuItem[i]))
+      }
+      if (process.env.contextmenu === 'true') {
+        document.addEventListener('contextmenu', (e) => {
+          contextMenu.popup(this.currentWindow(), e.x, e.y)
+        })
+      }
+      var menu = new Menu()
+      menu.append(new MenuItem({
+        label: '主页',
+        click () {
+          if (process.env.APP_URL) {
+            that.$root.webview && that.$root.webview.loadURL(process.env.APP_URL)
+          } else {
+            alert('主页未指定')
+          }
+        }
+      }))
+      menu.append(new MenuItem({label: '调试', submenu: contextMenuItem}))
+      menu.append(new MenuItem({
+        label: '视图',
+        submenu: [
+          {label: '缩小', role: 'zoomin'},
+          {label: '放大 ', role: 'zoomout'},
+          {label: '还原', role: 'resetzoom'}
+        ]
+      }))
+      menu.append(new MenuItem({label: '切换全屏', role: 'togglefullscreen'}))
+      menu.append(new MenuItem({label: '关闭退出', role: 'quit'}))
+      menu.append(new MenuItem({
+        label: '关于',
+        click () {
+          alert(process.env.APP_NAME + '\n' + process.env.APP_TITLE)
+        }
+      }))
+
+      this.menu = menu
     }
   },
   created () {
     this.initMenu()
-    if (process.env.APP_TITLE) {
-      this.title = process.env.APP_TITLE
-    }
   }
 }
 </script>
@@ -110,7 +214,7 @@ export default {
     line-height: 30px;
     padding: 0 5px;
     font-size: 13px;
-    border-bottom: solid 1px #181A1F;
+    /*border-bottom: solid 1px #181A1F;*/
     box-sizing: border-box;
     -webkit-app-region: drag;
     user-select:none;
@@ -125,6 +229,12 @@ export default {
   }
   .header-left{
     float: left;
+  }
+  .browser-title{
+    float: left;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
   }
   .header-right{
     float: right;

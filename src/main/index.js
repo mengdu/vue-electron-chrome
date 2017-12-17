@@ -5,8 +5,8 @@ import {
   BrowserWindow,
   ipcMain
 } from 'electron'
+import {env} from './utils'
 import dotenv from 'dotenv'
-
 // loading .env
 dotenv.config()
 
@@ -15,22 +15,36 @@ dotenv.config()
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
  */
 if (process.env.NODE_ENV !== 'development') {
-  global.__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\')
+  global.__static = path.join(__dirname, '/static').replace(/\\/g, '\\\\')
 }
 
 let mainWindow
 const winURL = process.env.NODE_ENV === 'development'
+  // vue
   ? `http://localhost:9080`
-  // ? `E:/work/msmk/msmk-chrome/main.html`
+  // ? path.resolve(path.join(__dirname, 'browser-view.html'))
   : `file://${__dirname}/index.html`
 
+const title = process.env.APP_TITLE ? ` - ${process.env.APP_TITLE}` : ''
+const appName = (process.env.APP_NAME || 'Electron Browser v1.0') + title
+let winOptions = {
+  frame: env.bool(process.env.frame),
+  title: appName,
+  kiosk: env.bool(process.env.kiosk),
+  transparent: env.bool(process.env.transparent),
+  useContentSize: env.bool(process.env.useContentSize),
+  skipTaskbar: env.bool(process.env.skipTaskbar)
+}
+
 function createWindow () {
+  mainWindow = null
   /**
    * Initial window options
    */
-  mainWindow = new BrowserWindow({
-    icon: path.join(__dirname, '../renderer/assets/icon.ico'),
-    frame: false,
+  var options = Object.assign({
+    icon: path.join(__dirname, '../renderer/assets/logo.png'),
+    // frame: true,
+    title: 'Electron Browser',
     // height: 800,
     // useContentSize: true,
     // width: 1000,
@@ -39,9 +53,11 @@ function createWindow () {
     // minimizable: true,
     // maximizable: true,
     // fullscreenable: true
-  })
+  }, winOptions)
+  mainWindow = new BrowserWindow(options)
 
   mainWindow.loadURL(winURL)
+  console.log(winURL)
 
   mainWindow.on('closed', () => {
     mainWindow = null
@@ -53,8 +69,18 @@ ipcMain.on('close', () => {
   console.log(mainWindow.isMaximized())
 })
 
+ipcMain.on('reload', (opts) => {
+  mainWindow.close()
+  if (typeof opts === 'object') {
+    Object.assign(winOptions, opts)
+  }
+  createWindow()
+})
 
-app.on('ready', createWindow)
+app.on('ready', () => {
+  createWindow()
+  console.log('app ready')
+})
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
