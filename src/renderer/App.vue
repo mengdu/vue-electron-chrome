@@ -32,11 +32,19 @@
       <router-view></router-view>
     </el-main>
   </el-container>
+  <!-- <el-footer class="browser-footer"
+    :height="theme.footerBarHeight"
+    :style="{
+
+    }"
+    ></el-footer> -->
 </el-container>
 </div>
 </template>
 
 <script>
+const appTitle = process.env.APP_TITLE
+const appName = (process.env.APP_NAME + ` ${process.env.APP_VERSION}`)
 export default {
   name: 'vue-electron-chrome',
   data () {
@@ -45,13 +53,14 @@ export default {
         titleBarHeight: (process.env.APP_TITLE_BAR_HEIGHT || 30) + 'px',
         titleBarBgColor: process.env.APP_TITLE_BAR_BGCOLOR,
         titleBarTextColor: process.env.APP_TITLE_BAR_TEXTCOLOR,
+        footerBarHeight: (process.env.APP_FOOTER_BAR_HEIGHT || 30) + 'px',
         windowBorderColor: process.env.APP_WINDOWN_BORDER_COLOR,
         windowBorder: process.env.APP_WINDOWN_BORDER
       },
       hideTitleBar: process.env.APP_TITLE_BAR_HIDE === 'true',
       sideWidth: '150px',
-      name: process.env.APP_NAME,
-      title: process.env.APP_TITLE,
+      name: appName,
+      title: appTitle,
       menu: null
     }
   },
@@ -81,13 +90,16 @@ export default {
     },
     handleClose () {
       var win = this.currentWindow()
-      this.$confirm('你确定要关闭应用吗？', '提示', {
-        confirmButtonText: '确定关闭',
-        cancelButtonText: '再看看',
-        type: 'warning'
-      }).then(() => {
+      // this.$confirm('你确定要关闭应用吗？', '提示', {
+      //   confirmButtonText: '确定关闭',
+      //   cancelButtonText: '再看看',
+      //   type: 'warning'
+      // }).then(() => {
+      //   win.close()
+      // }).catch(() => {})
+      if (confirm('你确定要关闭应用吗？')) {
         win.close()
-      }).catch(() => {})
+      }
     },
     handleShowMenu () {
       this.menu.popup(this.currentWindow(), 0, 31)
@@ -96,8 +108,9 @@ export default {
       var that = this
       var Menu = this.$electron.remote.Menu
       var MenuItem = this.$electron.remote.MenuItem
+      var win = this.currentWindow()
       // this.menu = Menu.setApplicationMenu(Menu.buildFromTemplate(MenuTemplate))
-
+      var skipTaskbar = process.env.skipTaskbar === 'true'
       var contextMenuItem = [
         {
           label: '返回',
@@ -125,6 +138,13 @@ export default {
           label: '显示/隐藏标题栏',
           click () {
             that.hideTitleBar = !that.hideTitleBar
+          }
+        },
+        {
+          label: '显示/隐藏任务栏图标',
+          click () {
+            win.setSkipTaskbar(!skipTaskbar)
+            skipTaskbar = !skipTaskbar
           }
         },
         {type: 'separator'},
@@ -177,9 +197,15 @@ export default {
       menu.append(new MenuItem({label: '切换全屏', role: 'togglefullscreen'}))
       menu.append(new MenuItem({label: '关闭退出', role: 'quit'}))
       menu.append(new MenuItem({
+        label: '重启应用',
+        click () {
+          that.$electron.ipcRenderer.send('relaunch')
+        }
+      }))
+      menu.append(new MenuItem({
         label: '关于',
         click () {
-          alert(process.env.APP_NAME + '\n' + process.env.APP_TITLE)
+          alert(process.env.APP_NAME + ' ' + process.env.APP_VERSION + '\n' + process.env.APP_TITLE)
         }
       }))
 
@@ -212,12 +238,17 @@ export default {
     background: #21252B;
     color: #F0F0F2;
     line-height: 30px;
-    padding: 0 5px;
+    padding: 0 8px;
     font-size: 13px;
     /*border-bottom: solid 1px #181A1F;*/
     box-sizing: border-box;
     -webkit-app-region: drag;
     user-select:none;
+  }
+  .browser-footer{
+    background: #21252B;
+    color: #F0F0F2;
+    line-height: 30px;
   }
   .app-icon{
     width: 20px;

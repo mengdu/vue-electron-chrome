@@ -24,7 +24,7 @@
     "exe-dev": "electron dist/electron/main.js"
   },
   "build": {
-    "productName": "vue-electron-chrome",
+    "productName": "electron-browser",
     "appId": "org.simulatedgreg.electron-vue",
     "directories": {
       "output": "build"

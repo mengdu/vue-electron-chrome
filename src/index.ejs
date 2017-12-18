@@ -2,6 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
+    <title></title>
     <% if (htmlWebpackPlugin.options.nodeModules) { %>
       <!-- Add `node_modules/` to global paths so `require` works properly in development -->
       <script>
@@ -10,12 +11,64 @@
     <% } %>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <div class="loading-box">
+        <style type="text/css">
+          .loading-box{
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+          }
+          .load-info{
+            color: #9095A5;
+          }
+          .progress-bar{
+            width: 250px;
+            height: 5px;
+            border-radius: 5px;
+            background: #dbdeea;
+            overflow: hidden;
+          }
+          .progress-bar .progress{
+            height: 100%;
+            width: 0%;
+            float: left;
+            background: #03B976;
+            /*transition: all 0.5s ease;*/
+            animation: loading-progress 1.5s ease forwards;
+          }
+          @keyframes loading-progress{
+            0%{
+              width: 0;
+            }
+            50%{
+              width: 60%;
+            }
+            95%{
+              width: 95%;
+            }
+            100%{
+              width: 100%;
+            }
+          }
+        </style>
+        <div class="progress-bar"><div class="progress"></div></div>
+        <p class="load-info">应用加载中...</p>
+      </div>
+    </div>
     <!-- Set `__static` path to static files in production -->
     <script>
-      if (process.env.NODE_ENV !== 'development') window.__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\')
+      document.title = process.env.APP_NAME
+      if (process.env.NODE_ENV !== 'development') {
+        window.__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\')
+      }
     </script>
-
     <!-- webpack builds are automatically injected -->
   </body>
 </html>

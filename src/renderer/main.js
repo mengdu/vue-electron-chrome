@@ -13,12 +13,12 @@ import {
   ipcRenderer,
   remote
 } from 'electron'
-
+import MCenterLayout from '@/components/center-layout'
 window.remote = remote
 window.win = remote.getCurrentWindow()
 
 Vue.use(ElementUI)
-
+Vue.use(MCenterLayout)
 if (!process.env.IS_WEB) {
   Vue.use(require('vue-electron'))
 }

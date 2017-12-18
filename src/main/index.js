@@ -9,7 +9,9 @@ import {env} from './utils'
 import dotenv from 'dotenv'
 // loading .env
 dotenv.config()
-
+process.env.APP_VERSION = 'v1.0.0'
+process.env.APP_NAME = process.env.APP_NAME || 'Electron Browser'
+process.env.APP_TITLE = process.env.APP_TITLE || ''
 /**
  * Set `__static` path to static files in production
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
@@ -26,7 +28,7 @@ const winURL = process.env.NODE_ENV === 'development'
   : `file://${__dirname}/index.html`
 
 const title = process.env.APP_TITLE ? ` - ${process.env.APP_TITLE}` : ''
-const appName = (process.env.APP_NAME || 'Electron Browser v1.0') + title
+const appName = (process.env.APP_NAME + ` ${process.env.APP_VERSION}`) + title
 let winOptions = {
   frame: env.bool(process.env.frame),
   title: appName,
@@ -75,6 +77,12 @@ ipcMain.on('reload', (opts) => {
     Object.assign(winOptions, opts)
   }
   createWindow()
+})
+
+ipcMain.on('relaunch', () => {
+  app.relaunch({args: process.argv.slice(1).concat(['--relaunch'])})
+  // relaunch不会退出当前应用，需要调用exit或者quit
+  app.exit(0)
 })
 
 app.on('ready', () => {
