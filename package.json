@@ -1,9 +1,7 @@
 {
-  "name": "vue-electron-chrome",
-  "version": "0.0.0",
-  "author": "lyg <ygl@szmsmk.com.cn>",
-  "description": "An electron-vue project",
-  "license": null,
+  "name": "electron-browser",
+  "version": "1.0.0",
+  "description": "An application browser",
   "main": "./dist/electron/main.js",
   "scripts": {
     "build": "node .electron-vue/build.js && electron-builder",
@@ -23,9 +21,16 @@
     "exe": "electron-builder",
     "exe-dev": "electron dist/electron/main.js"
   },
+  "homepage": "https://www.github.com/mengdu",
+  "repository": "https://www.github.com/mengdu/electron-browser",
+  "author": {
+    "name": "lanyue",
+    "email": "lanyueos@qq.com"
+  },
+  "license": "MIT",
   "build": {
     "productName": "electron-browser",
-    "appId": "org.simulatedgreg.electron-vue",
+    "appId": "com.electron-browser.app",
     "directories": {
       "output": "build"
     },
@@ -63,11 +68,18 @@
       ]
     },
     "linux": {
-      "icon": "build/icons"
+      "icon": "build/icons",
+      "target": [
+        {
+          "target": "tar.gz",
+          "arch": [
+            "armv7l"
+          ]
+        }
+      ]
     }
   },
   "dependencies": {
-    "axios": "^0.16.1",
     "dotenv": "^4.0.0",
     "element-ui": "^2.0.8",
     "vue": "^2.5.11",
