@@ -20,6 +20,9 @@ a{
 ::selection{
   background: #CBD1DE;
 }
+.text-center{
+  text-align: center;
+}
 .main-view{
   width: 100%;
   height: 100%;

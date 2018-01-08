@@ -8,10 +8,20 @@ import {
 import {env} from './utils'
 import dotenv from 'dotenv'
 // loading .env
-dotenv.config()
+var result = dotenv.config()
+
+if (result.error) {
+  throw result.error
+}
+
+console.log(result.parsed)
+
 process.env.APP_VERSION = 'v1.0.0'
 process.env.APP_NAME = process.env.APP_NAME || 'Electron Browser'
 process.env.APP_TITLE = process.env.APP_TITLE || ''
+
+console.log(process.env.APP_VERSION)
+
 /**
  * Set `__static` path to static files in production
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
@@ -83,6 +93,12 @@ ipcMain.on('relaunch', () => {
   app.relaunch({args: process.argv.slice(1).concat(['--relaunch'])})
   // relaunch不会退出当前应用，需要调用exit或者quit
   app.exit(0)
+})
+
+// 设置配置
+ipcMain.on('get-config', (event) => {
+  // 同步返回
+  event.returnValue = config
 })
 
 app.on('ready', () => {

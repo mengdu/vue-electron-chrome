@@ -30,6 +30,12 @@
     <!-- <el-aside class="browser-aside" :width="sideWidth">Aside</el-aside> -->
     <el-main class="browser-body">
       <router-view></router-view>
+      <el-dialog
+        :visible.sync="showAppInfo"
+        :modal-append-to-body="true"
+        >
+        <app-info></app-info>
+      </el-dialog>
     </el-main>
   </el-container>
   <!-- <el-footer class="browser-footer"
@@ -39,14 +45,21 @@
     }"
     ></el-footer> -->
 </el-container>
+
+
+
 </div>
 </template>
 
 <script>
+import AppInfo from '@/components/app-info'
 const appTitle = process.env.APP_TITLE
 const appName = (process.env.APP_NAME + ` ${process.env.APP_VERSION}`)
 export default {
   name: 'vue-electron-chrome',
+  components: {
+    AppInfo
+  },
   data () {
     return {
       theme: {
@@ -61,7 +74,8 @@ export default {
       sideWidth: '150px',
       name: appName,
       title: appTitle,
-      menu: null
+      menu: null,
+      showAppInfo: false
     }
   },
   methods: {
@@ -163,6 +177,12 @@ export default {
               }
             }
           }
+        },
+        {
+          label: '关于',
+          click () {
+            that.showAppInfo = true
+          }
         }
       ]
       var contextMenu = new Menu()
@@ -214,6 +234,7 @@ export default {
   },
   created () {
     this.initMenu()
+    console.log(this.$config.name)
   }
 }
 </script>

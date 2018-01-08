@@ -73,7 +73,7 @@
         {
           "target": "tar.gz",
           "arch": [
-            "armv7l"
+            "x64"
           ]
         }
       ]

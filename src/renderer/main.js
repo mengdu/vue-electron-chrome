@@ -10,12 +10,11 @@ import router from './router'
 // import store from './store'
 import '@/assets/main'
 import {
-  ipcRenderer,
-  remote
+  ipcRenderer
 } from 'electron'
 import MCenterLayout from '@/components/center-layout'
-window.remote = remote
-window.win = remote.getCurrentWindow()
+// window.remote = remote
+// window.win = remote.getCurrentWindow()
 
 Vue.use(ElementUI)
 Vue.use(MCenterLayout)
@@ -23,11 +22,17 @@ if (!process.env.IS_WEB) {
   Vue.use(require('vue-electron'))
 }
 
+var config = ipcRenderer.sendSync('get-config')
+// ipcRenderer.on('config', (event, config) => {
+//   console.log(config)
+//   Vue.prototype.$config = config
+// })
+Vue.prototype.$config = config
 var debug = process.env.NODE_ENV !== 'production'
 
 // Vue.http = Vue.prototype.$http = axios
-Vue.prototype.$remote = window.remote
-Vue.prototype.$ipc = ipcRenderer
+// Vue.prototype.$remote = window.remote
+// Vue.prototype.$ipc = ipcRenderer
 
 Vue.config.productionTip = debug
 

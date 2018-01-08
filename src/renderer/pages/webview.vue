@@ -1,48 +1,29 @@
 <template>
 <div class="webview-body">
   <div class="webview-loading" v-if="didLoading" v-loading="didLoading"></div>
-  <div class="void-box" v-if="!src">
-    <m-center-layout>
-      <m-center-layout-item style="text-align: center">
-        <img src="../assets/logo.png" class="logo" alt="">
-        <h1 class="title">{{title}}</h1>
-        <p class="description">专为网页APP打造的全屏模式浏览器，简洁，可定制。</p>
-        <ul class="info">
-          <li><strong>Electron: </strong><span>{{electron}}</span></li>
-          <li><strong>Node: </strong><span>{{node}}</span></li>
-          <!-- <li><strong>Platform: </strong><span>{{platform}}</span></li> -->
-          <li><strong>Version: </strong><span>{{version}}</span></li>
-        </ul>
-        <p class="copyright">make by <a href="#" @click="open('https://www.github.com/mengdu')">@lanyue</a></p>
+
+    <m-center-layout v-if="!src" style="background-color: #fff">
+      <m-center-layout-item>
+        <app-info></app-info>
       </m-center-layout-item>
     </m-center-layout>
-    
-  </div>
+
   <webview :src="src" v-else class="webview" ref="webview" allowpopups></webview>
 </div>
 </template>
 <script>
+import AppInfo from '@/components/app-info'
 export default {
+  components: {
+    AppInfo
+  },
   data () {
     return {
       src: process.env.APP_URL || '',
-      title: process.env.APP_NAME + ' ' + process.env.APP_TITLE,
-      webview: null,
-      electron: process.versions['atom-shell'],
-      node: process.versions.node,
-      // platform: require('os').platform(),
-      version: process.env.APP_VERSION,
       didLoading: false
     }
   },
   methods: {
-    Handleduo (data) {
-      // do
-      console.log(data)
-    },
-    open (link) {
-      this.$electron.shell.openExternal(link)
-    },
     currentWindow () {
       return this.$electron.remote.getCurrentWindow()
     },
@@ -126,36 +107,5 @@ export default {
   .webview-loading .el-loading-spinner .circular{
     width: 24px;
     height: 24px;
-  }
-  .void-box{
-    height: 100%;
-    width: 100%;
-    background: #fff;
-  }
-  .void-box .title{
-    font-size: 2.5rem;
-    font-weight: 100;
-  }
-  .void-box .description{
-    font-size: 1rem;
-  }
-  .void-box .info{
-    margin-top: 50px;
-    display: block;
-  }
-  .void-box .info:after,
-  .void-box .info:before{
-    content: "";
-    display: table;
-    clear: both;
-  }
-  .void-box .info li{
-    display: inline-block;
-    list-style: none;
-    margin-right: 5px;
-  }
-  .void-box .copyright{
-    margin-top: 30px;
-    color: #666;
   }
 </style>
