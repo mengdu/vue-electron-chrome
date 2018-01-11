@@ -19,8 +19,9 @@ export default {
   },
   data () {
     return {
-      src: process.env.APP_URL || '',
-      didLoading: false
+      src: this.$config.APP_URL || '',
+      didLoading: false,
+      isInit: true
     }
   },
   methods: {
@@ -49,7 +50,7 @@ export default {
         // this.webview.addEventListener('did-fail-load', () => {
         //   console.log('did-fail-load')
         // })
-        if (process.env.didLoading === 'true') {
+        if (this.$config.didLoading) {
           this.webview.addEventListener('did-start-loading', () => {
             // console.log('did-start-loading', this.didLoading)
             this.didLoading = true
@@ -77,6 +78,14 @@ export default {
   mounted () {
     this.$root.webview = this.webview = this.$refs['webview']
     this.init()
+    // this.webview && this.webview.reloadIgnoringCache()
+    // console.log(this.webview.reloadIgnoringCache())
+    this.webview && this.webview.addEventListener('dom-ready', () => {
+      if (this.isInit && this.$config.ignoringCache) {
+        this.webview.reloadIgnoringCache()
+      }
+      this.isInit = false
+    })
   }
 }
 </script>

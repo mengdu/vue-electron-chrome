@@ -9,6 +9,10 @@
 > 浏览器主题可定制，配置简单，实现了简单的网页浏览器功能。
 
 
+**百度云下载：**
+
+链接: https://pan.baidu.com/s/1nxh2nBb 密码: 77mq
+
 
 ![Electron-Browser](20171218164524.png)
 

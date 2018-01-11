@@ -5,22 +5,16 @@ import {
   BrowserWindow,
   ipcMain
 } from 'electron'
-import {env} from './utils'
-import dotenv from 'dotenv'
+
+import envjs from 'loadenvjs'
+
 // loading .env
-var result = dotenv.config()
-
-if (result.error) {
-  throw result.error
-}
-
-console.log(result.parsed)
-
-process.env.APP_VERSION = 'v1.0.0'
-process.env.APP_NAME = process.env.APP_NAME || 'Electron Browser'
-process.env.APP_TITLE = process.env.APP_TITLE || ''
-
-console.log(process.env.APP_VERSION)
+const config = envjs({mount: false})
+// console.log(config)
+process.env.APP_NAME = config.APP_NAME = config.APP_NAME || 'Electron Browser'
+config.APP_TITLE = config.APP_TITLE || ''
+config.APP_VERSION = '1.1.0'
+config.contextmenu = typeof config.contextmenu === 'undefined' ? true : config.contextmenu
 
 /**
  * Set `__static` path to static files in production
@@ -37,15 +31,14 @@ const winURL = process.env.NODE_ENV === 'development'
   // ? path.resolve(path.join(__dirname, 'browser-view.html'))
   : `file://${__dirname}/index.html`
 
-const title = process.env.APP_TITLE ? ` - ${process.env.APP_TITLE}` : ''
-const appName = (process.env.APP_NAME + ` ${process.env.APP_VERSION}`) + title
 let winOptions = {
-  frame: env.bool(process.env.frame),
-  title: appName,
-  kiosk: env.bool(process.env.kiosk),
-  transparent: env.bool(process.env.transparent),
-  useContentSize: env.bool(process.env.useContentSize),
-  skipTaskbar: env.bool(process.env.skipTaskbar)
+  ...config.other,
+  frame: !!config.frame,
+  title: config.APP_NAME,
+  kiosk: config.kiosk,
+  transparent: config.transparent,
+  useContentSize: config.useContentSize,
+  skipTaskbar: config.skipTaskbar
 }
 
 function createWindow () {
@@ -66,6 +59,7 @@ function createWindow () {
     // maximizable: true,
     // fullscreenable: true
   }, winOptions)
+
   mainWindow = new BrowserWindow(options)
 
   mainWindow.loadURL(winURL)
@@ -103,7 +97,6 @@ ipcMain.on('get-config', (event) => {
 
 app.on('ready', () => {
   createWindow()
-  console.log('app ready')
 })
 
 app.on('window-all-closed', () => {

@@ -1,23 +1,9 @@
-
-## Electron Browser 配置说明
-
-`Electron Browser` 运行需要在软件根目录下创建一个 `.env.js` 文件用于配置参数。
-
-
-## .env.js
-
-`.env.js` 文件可以复制下面内容保存即可
-
-你只需要配置 `APP_URL` 为你的应用地址即可，更详细的配置，请自行尝试。
-
-```js
-// .env.js
 return {
   // 应用名字
   // APP_NAME: 'Msmk Browser',
 
   // 应用地址
-  APP_URL: 'http://yuque.com',
+  APP_URL: 'http://www.baidu.com',
 
   // 应用标题
   // APP_TITLE: '美思美科应用容器',
@@ -44,7 +30,7 @@ return {
   // frame: false,
 
   // 开启kiosk模式
-  kiosk: false,
+  // kiosk: false,
 
   // 开启右键菜单
   contextmenu: true,
@@ -71,4 +57,3 @@ return {
   //   height: 520
   // }
 }
-```

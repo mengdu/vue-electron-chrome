@@ -20,7 +20,7 @@
       <span class="app-title"v-if="title">&nbsp;-&nbsp;{{title}}</span>
     </div>
     <div class="header-right">
-      <button class="ctrl-icon fullscreen" title="全屏切换" @click="handleFullScreen"></button>
+      <!-- <button class="ctrl-icon fullscreen" title="全屏切换" @click="handleFullScreen"></button> -->
       <button class="ctrl-icon minimize" title="最小化窗口" @click="handleMinimize"></button>
       <button class="ctrl-icon maximize" title="最大化窗口" @click="handleMaximize"></button>
       <button class="ctrl-icon close" title="关闭窗口" @click="handleClose"></button>
@@ -53,8 +53,6 @@
 
 <script>
 import AppInfo from '@/components/app-info'
-const appTitle = process.env.APP_TITLE
-const appName = (process.env.APP_NAME + ` ${process.env.APP_VERSION}`)
 export default {
   name: 'vue-electron-chrome',
   components: {
@@ -63,17 +61,17 @@ export default {
   data () {
     return {
       theme: {
-        titleBarHeight: (process.env.APP_TITLE_BAR_HEIGHT || 30) + 'px',
-        titleBarBgColor: process.env.APP_TITLE_BAR_BGCOLOR,
-        titleBarTextColor: process.env.APP_TITLE_BAR_TEXTCOLOR,
-        footerBarHeight: (process.env.APP_FOOTER_BAR_HEIGHT || 30) + 'px',
-        windowBorderColor: process.env.APP_WINDOWN_BORDER_COLOR,
-        windowBorder: process.env.APP_WINDOWN_BORDER
+        titleBarHeight: (this.$config.APP_TITLE_BAR_HEIGHT || 30) + 'px',
+        titleBarBgColor: this.$config.APP_TITLE_BAR_BGCOLOR,
+        titleBarTextColor: this.$config.APP_TITLE_BAR_TEXTCOLOR,
+        footerBarHeight: (this.$config.APP_FOOTER_BAR_HEIGHT || 30) + 'px',
+        windowBorderColor: this.$config.APP_WINDOWN_BORDER_COLOR,
+        windowBorder: this.$config.APP_WINDOWN_BORDER
       },
-      hideTitleBar: process.env.APP_TITLE_BAR_HIDE === 'true',
+      hideTitleBar: this.$config.APP_TITLE_BAR_HIDE === 'true',
       sideWidth: '150px',
-      name: appName,
-      title: appTitle,
+      name: this.$config.APP_NAME + ' ' + this.$config.APP_VERSION,
+      title: this.$config.APP_TITLE,
       menu: null,
       showAppInfo: false
     }
@@ -104,13 +102,6 @@ export default {
     },
     handleClose () {
       var win = this.currentWindow()
-      // this.$confirm('你确定要关闭应用吗？', '提示', {
-      //   confirmButtonText: '确定关闭',
-      //   cancelButtonText: '再看看',
-      //   type: 'warning'
-      // }).then(() => {
-      //   win.close()
-      // }).catch(() => {})
       if (confirm('你确定要关闭应用吗？')) {
         win.close()
       }
@@ -124,7 +115,7 @@ export default {
       var MenuItem = this.$electron.remote.MenuItem
       var win = this.currentWindow()
       // this.menu = Menu.setApplicationMenu(Menu.buildFromTemplate(MenuTemplate))
-      var skipTaskbar = process.env.skipTaskbar === 'true'
+      var skipTaskbar = this.$config.skipTaskbar
       var contextMenuItem = [
         {
           label: '返回',
@@ -162,10 +153,16 @@ export default {
           }
         },
         {type: 'separator'},
+        {
+          label: '强制重新加载框架',
+          click () {
+            that.$root.webview && that.$root.webview.reloadIgnoringCache()
+          }
+        },
         {label: '重新加载应用', role: 'reload'},
         {label: '强制加载应用', role: 'forcereload'},
-        {label: '应用控制台', role: 'toggledevtools'},
         {type: 'separator'},
+        {label: '应用控制台', role: 'toggledevtools'},
         {
           label: '审查元素',
           click () {
@@ -189,7 +186,7 @@ export default {
       for (let i in contextMenuItem) {
         contextMenu.append(new MenuItem(contextMenuItem[i]))
       }
-      if (process.env.contextmenu === 'true') {
+      if (that.$config.contextmenu) {
         document.addEventListener('contextmenu', (e) => {
           contextMenu.popup(this.currentWindow(), e.x, e.y)
         })
@@ -198,22 +195,22 @@ export default {
       menu.append(new MenuItem({
         label: '主页',
         click () {
-          if (process.env.APP_URL) {
-            that.$root.webview && that.$root.webview.loadURL(process.env.APP_URL)
+          if (this.$config.APP_URL) {
+            that.$root.webview && that.$root.webview.loadURL(this.$config.APP_URL)
           } else {
             alert('主页未指定')
           }
         }
       }))
       menu.append(new MenuItem({label: '调试', submenu: contextMenuItem}))
-      menu.append(new MenuItem({
-        label: '视图',
-        submenu: [
-          {label: '缩小', role: 'zoomin'},
-          {label: '放大 ', role: 'zoomout'},
-          {label: '还原', role: 'resetzoom'}
-        ]
-      }))
+      // menu.append(new MenuItem({
+      //   label: '视图',
+      //   submenu: [
+      //     {label: '缩小', role: 'zoomin'},
+      //     {label: '放大 ', role: 'zoomout'},
+      //     {label: '还原', role: 'resetzoom'}
+      //   ]
+      // }))
       menu.append(new MenuItem({label: '切换全屏', role: 'togglefullscreen'}))
       menu.append(new MenuItem({label: '关闭退出', role: 'quit'}))
       menu.append(new MenuItem({
@@ -225,7 +222,7 @@ export default {
       menu.append(new MenuItem({
         label: '关于',
         click () {
-          alert(process.env.APP_NAME + ' ' + process.env.APP_VERSION + '\n' + process.env.APP_TITLE)
+          alert(that.$config.APP_NAME + ' ' + that.$config.APP_VERSION + '\n' + that.$config.APP_TITLE)
         }
       }))
 
@@ -234,7 +231,6 @@ export default {
   },
   created () {
     this.initMenu()
-    console.log(this.$config.name)
   }
 }
 </script>

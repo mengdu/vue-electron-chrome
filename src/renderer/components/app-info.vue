@@ -18,14 +18,14 @@
 export default {
   data () {
     return {
-      title: process.env.APP_NAME + ' ' + process.env.APP_TITLE,
+      title: this.$config.APP_NAME + ' ' + this.$config.APP_TITLE,
       webview: null,
       electron: process.versions['atom-shell'],
       chrome: process.versions.chrome,
       node: process.versions.node,
       v8: process.versions.v8,
       // platform: require('os').platform(),
-      version: process.env.APP_VERSION
+      version: this.$config.APP_VERSION
     }
   },
   methods: {
